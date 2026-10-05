@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WebFlyx</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="brand">
+        🎬 WebFlyx
+    </div>
+
+    <nav>
+        <a href="#movies">Movies</a>
+        <a href="#classics">Classics</a>
+        <a href="#quotes">Quotes</a>
+    </nav>
+</header>
+
+
+<main>
+
+    <section class="hero">
+        <div>
+            <p class="eyebrow">YOUR MOVIE CATALOG</p>
+
+            <h1>
+                Discover your next
+                <span>favorite movie.</span>
+            </h1>
+
+            <p class="hero-text">
+                Explore movies, classics, and memorable quotes
+                powered by the WebFlyx API.
+            </p>
+
+            <div class="search-box">
+                <input
+                    id="searchInput"
+                    type="text"
+                    placeholder="Search for a movie..."
+                >
+
+                <button id="searchButton">
+                    Search
+                </button>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="movies" class="section">
+
+        <div class="section-header">
+            <div>
+                <p class="eyebrow">CATALOG</p>
+                <h2>Movies</h2>
+            </div>
+
+            <span id="movieCount" class="count-badge">
+                Loading...
+            </span>
+        </div>
+
+        <div id="moviesGrid" class="movie-grid">
+            <p class="loading">Loading movies...</p>
+        </div>
+
+    </section>
+
+
+    <section id="classics" class="section dark-section">
+
+        <div class="section-header">
+            <div>
+                <p class="eyebrow">TIMELESS</p>
+                <h2>Classic Movies</h2>
+            </div>
+        </div>
+
+        <div id="classicsGrid" class="movie-grid">
+            <p class="loading">Loading classics...</p>
+        </div>
+
+    </section>
+
+
+    <section id="quotes" class="section">
+
+        <div class="section-header">
+            <div>
+                <p class="eyebrow">MEMORABLE</p>
+                <h2>Movie Quotes</h2>
+            </div>
+        </div>
+
+        <div id="quotesContainer" class="quotes-grid">
+            <p class="loading">Loading quotes...</p>
+        </div>
+
+    </section>
+
+</main>
+
+<div id="movieModal" class="modal hidden">
+    <div class="modal-content">
+        <button id="closeModal" class="close-button">&times;</button>
+
+        <div id="movieDetails">
+            <p class="loading">Loading movie...</p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>WebFlyx · Built with Python, FastAPI, SQLite & JavaScript</p>
+</footer>
+
+
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>
