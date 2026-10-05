@@ -1,8 +1,16 @@
 # 🎬 WebFlyx
 
-WebFlyx is a movie catalog web application built with **Python, FastAPI, SQLAlchemy, SQLite, Jinja2, HTML, CSS, and JavaScript**.
+**WebFlyx** is a movie catalog web application built with **Python, FastAPI, SQLAlchemy, SQLite, Jinja2, HTML, CSS, and JavaScript**.
 
 The project provides a REST API for movies and movie quotes, together with an interactive frontend for browsing, searching, filtering, and viewing movie details.
+
+## 🌐 Live Demo
+
+**WebFlyx is deployed and available online:**
+
+[https://webflyx.onrender.com/](https://webflyx.onrender.com/?utm_source=chatgpt.com)
+
+> The application is deployed using Render's free hosting plan. The free instance may spin down after inactivity, so the first request after a period of inactivity may take longer to respond.
 
 ## ✨ Features
 
@@ -18,6 +26,7 @@ The project provides a REST API for movies and movie quotes, together with an in
 * 📱 Responsive frontend
 * 🧪 Automated API tests
 * ⚙️ GitHub Actions CI
+* 🌍 Deployed web application
 
 ## 🛠️ Tech Stack
 
@@ -31,6 +40,7 @@ The project provides a REST API for movies and movie quotes, together with an in
 * **uv** for dependency management
 * **pytest** for testing
 * **GitHub Actions** for continuous integration
+* **Render** for deployment
 
 ## 📁 Project Structure
 
@@ -60,6 +70,7 @@ webflyx/
 ├── tests/
 │   └── test_movies_api.py
 ├── scripts/
+│   └── seed_db.py
 ├── classics.csv
 ├── quotes/
 ├── titles.md
@@ -85,25 +96,33 @@ This project uses `uv`.
 uv sync
 ```
 
-### 3. Run the application
+### 3. Seed the database
 
+Populate the SQLite database with the movie, classic movie, and quote data:
 
+```bash
+uv run python scripts/seed_db.py
+```
+
+### 4. Run the application
+
+```bash
 uv run uvicorn app.main:app --reload
-
+```
 
 The application will be available at:
 
-
+```text
 http://127.0.0.1:8000
-
+```
 
 ## 🌐 Frontend
 
 Open:
 
-
+```text
 http://127.0.0.1:8000/
-
+```
 
 The frontend provides:
 
@@ -121,70 +140,71 @@ FastAPI automatically provides interactive API documentation.
 
 Open:
 
-
+```text
 http://127.0.0.1:8000/docs
-
+```
 
 ### Health Check
 
-
+```http
 GET /health
-
+```
 
 Example response:
 
-
+```json
 {
   "status": "ok"
 }
-
+```
 
 ### Movies
 
 Get all movies:
 
-
+```http
 GET /movies
+```
 
 Search movies:
 
-
+```http
 GET /movies/search?q=star
-
+```
 
 Get classic movies:
 
-
+```http
 GET /movies/classics
-
+```
 
 Get a movie by ID:
 
-
+```http
 GET /movies/{movie_id}
-
+```
 
 Get quotes for a movie:
 
-
+```http
 GET /movies/{movie_id}/quotes
-
+```
 
 ### Quotes
 
 Get all quotes with their movie titles:
 
-
+```http
 GET /quotes
-
+```
 
 ## 🧪 Testing
 
 Run the complete test suite with:
 
-
+```bash
 uv run pytest -q
-
+```
 
 The project currently includes tests covering:
 
@@ -202,9 +222,9 @@ The project currently includes tests covering:
 
 Current test status:
 
-
+```text
 11 passed
-
+```
 
 ## ⚙️ Continuous Integration
 
@@ -224,15 +244,47 @@ The workflow:
 4. Installs project dependencies
 5. Runs the complete pytest suite
 
+## 🚀 Deployment
+
+WebFlyx is deployed on **Render**.
+
+The deployment uses:
+
+```text
+Build Command:
+uv sync --frozen && PYTHONPATH=. uv run python scripts/seed_db.py
+```
+
+```text
+Start Command:
+uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+The database is initialized during deployment using:
+
+```text
+scripts/seed_db.py
+```
+
+This loads:
+
+* Movie titles from `titles.md`
+* Classic movie information from `classics.csv`
+* Movie quotes from the `quotes/` directory
+
+Live application:
+
+https://webflyx.onrender.com/
+
 ## 🌿 Git Branches
 
 The project was developed in phases:
 
-
+```text
 main
 ├── phase1/backend
 └── phase2/frontend
-
+```
 
 ### Phase 1 — Backend
 
@@ -268,24 +320,28 @@ Implemented:
 * Additional API test coverage
 * Project documentation
 * Final project cleanup
+* Deployment configuration
+* Live web deployment
 
 ## 📌 Project Status
 
-WebFlyx is a fully functional local movie catalog application with:
+WebFlyx is a fully functional and deployed movie catalog application with:
 
 * ✅ REST API
 * ✅ Interactive frontend
 * ✅ SQLite database
 * ✅ Movie and quote data
+* ✅ Movie search
+* ✅ Classic movie filtering
+* ✅ Year filtering
+* ✅ Movie details
+* ✅ Movie quotes
+* ✅ Trailer links
 * ✅ Automated tests
 * ✅ GitHub Actions CI
 * ✅ Project documentation
+* ✅ Live deployment
 
 ## 👩‍💻 Author
 
 **Hiba Hroob**
-
-GitHub:
-
-https://github.com/hiba-hroob
-
