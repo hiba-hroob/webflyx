@@ -52,7 +52,7 @@ function movieCard(movie) {
 }
 
 
-function quoteCard(quote, movie) {
+function quoteCard(quote) {
     return `
         <article class="quote-card">
             <p class="quote-text">
@@ -60,7 +60,7 @@ function quoteCard(quote, movie) {
             </p>
 
             <p class="quote-movie">
-                ${escapeHtml(movie.title)}
+                ${escapeHtml(quote.movie_title)}
             </p>
         </article>
     `;
@@ -107,8 +107,20 @@ async function fetchMovieQuotes(movieId) {
 }
 
 
+async function fetchQuotes() {
+    const response = await fetch("/quotes");
+
+    if (!response.ok) {
+        throw new Error("Failed to load quotes.");
+    }
+
+    return response.json();
+}
+
+
 async function loadMovies() {
-    moviesGrid.innerHTML = '<p class="loading">Loading movies...</p>';
+    moviesGrid.innerHTML =
+        '<p class="loading">Loading movies...</p>';
 
     try {
         const movies = await fetchMovies();
@@ -118,7 +130,6 @@ async function loadMovies() {
         if (movies.length === 0) {
             moviesGrid.innerHTML =
                 '<p class="loading">No movies found.</p>';
-
             return;
         }
 
@@ -126,6 +137,8 @@ async function loadMovies() {
             .map(movieCard)
             .join("");
     } catch (error) {
+        console.error(error);
+
         moviesGrid.innerHTML =
             '<p class="error">Unable to load movies.</p>';
     }
@@ -143,7 +156,6 @@ async function loadClassics() {
         if (classics.length === 0) {
             classicsGrid.innerHTML =
                 '<p class="loading">No classic movies found.</p>';
-
             return;
         }
 
@@ -151,6 +163,8 @@ async function loadClassics() {
             .map(movieCard)
             .join("");
     } catch (error) {
+        console.error(error);
+
         classicsGrid.innerHTML =
             '<p class="error">Unable to load classics.</p>';
     }
@@ -162,33 +176,20 @@ async function loadQuotes() {
         '<p class="loading">Loading quotes...</p>';
 
     try {
-        const movies = await fetchMovies();
+        const quotes = await fetchQuotes();
 
-        const moviesWithQuotes = [];
-
-        for (const movie of movies) {
-            const quotes =
-                await fetchMovieQuotes(movie.id);
-
-            for (const quote of quotes) {
-                moviesWithQuotes.push({
-                    quote,
-                    movie,
-                });
-            }
-        }
-
-        if (moviesWithQuotes.length === 0) {
+        if (quotes.length === 0) {
             quotesContainer.innerHTML =
                 '<p class="loading">No quotes available.</p>';
-
             return;
         }
 
-        quotesContainer.innerHTML = moviesWithQuotes
-            .map(item => quoteCard(item.quote, item.movie))
+        quotesContainer.innerHTML = quotes
+            .map(quoteCard)
             .join("");
     } catch (error) {
+        console.error(error);
+
         quotesContainer.innerHTML =
             '<p class="error">Unable to load quotes.</p>';
     }
@@ -199,7 +200,7 @@ async function searchMovies() {
     const query = searchInput.value.trim();
 
     if (!query) {
-        loadMovies();
+        await loadMovies();
         return;
     }
 
@@ -212,13 +213,11 @@ async function searchMovies() {
                 `/movies/search?q=${encodeURIComponent(query)}`
             );
 
-        movieCount.textContent =
-            `${movies.length} results`;
+        movieCount.textContent = `${movies.length} results`;
 
         if (movies.length === 0) {
             moviesGrid.innerHTML =
                 '<p class="loading">No movies found.</p>';
-
             return;
         }
 
@@ -226,6 +225,8 @@ async function searchMovies() {
             .map(movieCard)
             .join("");
     } catch (error) {
+        console.error(error);
+
         moviesGrid.innerHTML =
             '<p class="error">Search failed.</p>';
     }
@@ -237,7 +238,9 @@ async function openMovieDetails(movieId) {
 
     movieDetails.innerHTML = `
         <div class="movie-details-loading">
-            <p class="loading">Loading movie details...</p>
+            <p class="loading">
+                Loading movie details...
+            </p>
         </div>
     `;
 
@@ -248,7 +251,7 @@ async function openMovieDetails(movieId) {
         ]);
 
         const year = movie.year
-            ? movie.year
+            ? String(movie.year)
             : "Year unavailable";
 
         const director = movie.director
@@ -258,7 +261,7 @@ async function openMovieDetails(movieId) {
         const quotesHtml = quotes.length > 0
             ? quotes
                 .map(
-                    quote => `
+                    (quote) => `
                         <blockquote class="detail-quote">
                             “${escapeHtml(quote.text)}”
                         </blockquote>
@@ -273,15 +276,21 @@ async function openMovieDetails(movieId) {
 
         const trailerSearchUrl =
             `https://www.youtube.com/results?search_query=${
-                encodeURIComponent(`${movie.title} official trailer`)
+                encodeURIComponent(
+                    `${movie.title} official trailer`
+                )
             }`;
 
         movieDetails.innerHTML = `
             <div class="movie-details-header">
-                <div class="movie-details-icon">🎬</div>
+                <div class="movie-details-icon">
+                    🎬
+                </div>
 
                 <div>
-                    <p class="eyebrow">MOVIE DETAILS</p>
+                    <p class="eyebrow">
+                        MOVIE DETAILS
+                    </p>
 
                     <h2>
                         ${escapeHtml(movie.title)}
@@ -310,7 +319,7 @@ async function openMovieDetails(movieId) {
                 <p>
                     <strong>Year</strong>
                     <span>
-                        ${escapeHtml(String(year))}
+                        ${escapeHtml(year)}
                     </span>
                 </p>
             </div>
@@ -347,6 +356,8 @@ async function openMovieDetails(movieId) {
             </div>
         `;
     } catch (error) {
+        console.error(error);
+
         movieDetails.innerHTML = `
             <div class="error">
                 Unable to load movie details.
@@ -361,76 +372,64 @@ function closeMovieModal() {
 }
 
 
-moviesGrid.addEventListener(
-    "click",
-    event => {
-        const card =
-            event.target.closest(".movie-card");
+moviesGrid.addEventListener("click", (event) => {
+    const card =
+        event.target.closest(".movie-card");
 
-        if (!card) {
-            return;
-        }
-
-        openMovieDetails(card.dataset.movieId);
+    if (!card) {
+        return;
     }
-);
+
+    openMovieDetails(card.dataset.movieId);
+});
 
 
-classicsGrid.addEventListener(
-    "click",
-    event => {
-        const card =
-            event.target.closest(".movie-card");
+classicsGrid.addEventListener("click", (event) => {
+    const card =
+        event.target.closest(".movie-card");
 
-        if (!card) {
-            return;
-        }
-
-        openMovieDetails(card.dataset.movieId);
+    if (!card) {
+        return;
     }
-);
+
+    openMovieDetails(card.dataset.movieId);
+});
 
 
-moviesGrid.addEventListener(
-    "keydown",
-    event => {
-        if (event.key !== "Enter" && event.key !== " ") {
-            return;
-        }
-
-        const card =
-            event.target.closest(".movie-card");
-
-        if (!card) {
-            return;
-        }
-
-        event.preventDefault();
-
-        openMovieDetails(card.dataset.movieId);
+moviesGrid.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+        return;
     }
-);
 
+    const card =
+        event.target.closest(".movie-card");
 
-classicsGrid.addEventListener(
-    "keydown",
-    event => {
-        if (event.key !== "Enter" && event.key !== " ") {
-            return;
-        }
-
-        const card =
-            event.target.closest(".movie-card");
-
-        if (!card) {
-            return;
-        }
-
-        event.preventDefault();
-
-        openMovieDetails(card.dataset.movieId);
+    if (!card) {
+        return;
     }
-);
+
+    event.preventDefault();
+
+    openMovieDetails(card.dataset.movieId);
+});
+
+
+classicsGrid.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+        return;
+    }
+
+    const card =
+        event.target.closest(".movie-card");
+
+    if (!card) {
+        return;
+    }
+
+    event.preventDefault();
+
+    openMovieDetails(card.dataset.movieId);
+});
 
 
 searchButton.addEventListener(
@@ -439,14 +438,11 @@ searchButton.addEventListener(
 );
 
 
-searchInput.addEventListener(
-    "keydown",
-    event => {
-        if (event.key === "Enter") {
-            searchMovies();
-        }
+searchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        searchMovies();
     }
-);
+});
 
 
 closeModal.addEventListener(
@@ -455,27 +451,21 @@ closeModal.addEventListener(
 );
 
 
-movieModal.addEventListener(
-    "click",
-    event => {
-        if (event.target === movieModal) {
-            closeMovieModal();
-        }
+movieModal.addEventListener("click", (event) => {
+    if (event.target === movieModal) {
+        closeMovieModal();
     }
-);
+});
 
 
-document.addEventListener(
-    "keydown",
-    event => {
-        if (
-            event.key === "Escape" &&
-            !movieModal.classList.contains("hidden")
-        ) {
-            closeMovieModal();
-        }
+document.addEventListener("keydown", (event) => {
+    if (
+        event.key === "Escape" &&
+        !movieModal.classList.contains("hidden")
+    ) {
+        closeMovieModal();
     }
-);
+});
 
 
 loadMovies();

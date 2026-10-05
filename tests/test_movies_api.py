@@ -170,3 +170,17 @@ def test_get_movie_quotes_not_found(client):
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Movie not found"
+def test_get_all_quotes(client):
+    response = client.get("/quotes")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 2
+
+    assert data[0]["text"] == "May the Force be with you"
+    assert data[0]["movie_title"] == "Star Wars"
+
+    assert data[1]["text"] == "Do or do not. There is no try"
+    assert data[1]["movie_title"] == "Star Wars"

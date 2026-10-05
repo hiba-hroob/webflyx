@@ -4,7 +4,9 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+
 from app.api.routes.movies import router as movies_router
+from app.api.routes.quotes import router as quotes_router
 from app.db.database import Base, engine
 from app.models import Movie, Quote
 
@@ -30,7 +32,7 @@ templates = Jinja2Templates(
 )
 
 app.include_router(movies_router)
-
+app.include_router(quotes_router)
 
 @app.get("/", tags=["Frontend"])
 def home(request: Request):
