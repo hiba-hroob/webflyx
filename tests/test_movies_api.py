@@ -184,3 +184,11 @@ def test_get_all_quotes(client):
 
     assert data[1]["text"] == "Do or do not. There is no try"
     assert data[1]["movie_title"] == "Star Wars"
+def test_search_movies_no_results(client):
+    response = client.get("/movies/search?q=nonexistent")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data == []
