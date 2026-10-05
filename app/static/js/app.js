@@ -6,9 +6,16 @@ const movieCount = document.getElementById("movieCount");
 const searchInput = document.getElementById("searchInput");
 const searchButton = document.getElementById("searchButton");
 
+const classicFilter = document.getElementById("classicFilter");
+const yearFilter = document.getElementById("yearFilter");
+const clearFiltersButton = document.getElementById("clearFilters");
+
 const movieModal = document.getElementById("movieModal");
 const movieDetails = document.getElementById("movieDetails");
 const closeModal = document.getElementById("closeModal");
+
+let allMovies = [];
+let currentMovieResults = [];
 
 
 function movieCard(movie) {
@@ -118,29 +125,114 @@ async function fetchQuotes() {
 }
 
 
+function populateYearFilter(movies) {
+    const years = [
+        ...new Set(
+            movies
+                .map(movie => movie.year)
+                .filter(year => year !== null)
+        ),
+    ].sort((a, b) => b - a);
+
+    yearFilter.innerHTML = `
+        <option value="">All years</option>
+        ${
+            years
+                .map(
+                    year =>
+                        `<option value="${year}">${year}</option>`
+                )
+                .join("")
+        }
+    `;
+}
+
+
+function applyFilters(movies) {
+    const classicValue = classicFilter.value;
+    const selectedYear = yearFilter.value;
+
+    return movies.filter(movie => {
+        if (
+            classicValue === "classic" &&
+            !movie.is_classic
+        ) {
+            return false;
+        }
+
+        if (
+            classicValue === "non-classic" &&
+            movie.is_classic
+        ) {
+            return false;
+        }
+
+        if (
+            selectedYear &&
+            String(movie.year) !== selectedYear
+        ) {
+            return false;
+        }
+
+        return true;
+    });
+}
+
+
+function renderMovieResults() {
+    const filteredMovies =
+        applyFilters(currentMovieResults);
+
+    movieCount.textContent =
+        `${filteredMovies.length} movies`;
+
+    if (currentMovieResults.length === 0) {
+        moviesGrid.innerHTML = `
+            <p class="loading">
+                No movies found.
+            </p>
+        `;
+        return;
+    }
+
+    if (filteredMovies.length === 0) {
+        moviesGrid.innerHTML = `
+            <p class="loading">
+                No movies match the selected filters.
+            </p>
+        `;
+        return;
+    }
+
+    moviesGrid.innerHTML = filteredMovies
+        .map(movieCard)
+        .join("");
+}
+
+
 async function loadMovies() {
     moviesGrid.innerHTML =
         '<p class="loading">Loading movies...</p>';
 
     try {
-        const movies = await fetchMovies();
+        allMovies = await fetchMovies();
 
-        movieCount.textContent = `${movies.length} movies`;
+        currentMovieResults = allMovies;
 
-        if (movies.length === 0) {
-            moviesGrid.innerHTML =
-                '<p class="loading">No movies found.</p>';
-            return;
-        }
+        populateYearFilter(allMovies);
+        renderMovieResults();
 
-        moviesGrid.innerHTML = movies
-            .map(movieCard)
-            .join("");
     } catch (error) {
         console.error(error);
 
-        moviesGrid.innerHTML =
-            '<p class="error">Unable to load movies.</p>';
+        movieCount.textContent = "Unavailable";
+
+        moviesGrid.innerHTML = `
+            <p class="error">
+                Unable to load movies.
+                Please refresh the page and try again.
+            </p>
+        `;
     }
 }
 
@@ -156,17 +248,22 @@ async function loadClassics() {
         if (classics.length === 0) {
             classicsGrid.innerHTML =
                 '<p class="loading">No classic movies found.</p>';
+
             return;
         }
 
         classicsGrid.innerHTML = classics
             .map(movieCard)
             .join("");
+
     } catch (error) {
         console.error(error);
 
-        classicsGrid.innerHTML =
-            '<p class="error">Unable to load classics.</p>';
+        classicsGrid.innerHTML = `
+            <p class="error">
+                Unable to load classics.
+            </p>
+        `;
     }
 }
 
@@ -181,17 +278,22 @@ async function loadQuotes() {
         if (quotes.length === 0) {
             quotesContainer.innerHTML =
                 '<p class="loading">No quotes available.</p>';
+
             return;
         }
 
         quotesContainer.innerHTML = quotes
             .map(quoteCard)
             .join("");
+
     } catch (error) {
         console.error(error);
 
-        quotesContainer.innerHTML =
-            '<p class="error">Unable to load quotes.</p>';
+        quotesContainer.innerHTML = `
+            <p class="error">
+                Unable to load quotes.
+            </p>
+        `;
     }
 }
 
@@ -200,7 +302,8 @@ async function searchMovies() {
     const query = searchInput.value.trim();
 
     if (!query) {
-        await loadMovies();
+        currentMovieResults = allMovies;
+        renderMovieResults();
         return;
     }
 
@@ -208,27 +311,22 @@ async function searchMovies() {
         '<p class="loading">Searching...</p>';
 
     try {
-        const movies =
+        currentMovieResults =
             await fetchMovies(
                 `/movies/search?q=${encodeURIComponent(query)}`
             );
 
-        movieCount.textContent = `${movies.length} results`;
+        renderMovieResults();
 
-        if (movies.length === 0) {
-            moviesGrid.innerHTML =
-                '<p class="loading">No movies found.</p>';
-            return;
-        }
-
-        moviesGrid.innerHTML = movies
-            .map(movieCard)
-            .join("");
     } catch (error) {
         console.error(error);
 
-        moviesGrid.innerHTML =
-            '<p class="error">Search failed.</p>';
+        moviesGrid.innerHTML = `
+            <p class="error">
+                Search failed.
+                Please try again.
+            </p>
+        `;
     }
 }
 
@@ -261,7 +359,7 @@ async function openMovieDetails(movieId) {
         const quotesHtml = quotes.length > 0
             ? quotes
                 .map(
-                    (quote) => `
+                    quote => `
                         <blockquote class="detail-quote">
                             “${escapeHtml(quote.text)}”
                         </blockquote>
@@ -355,6 +453,7 @@ async function openMovieDetails(movieId) {
                 </a>
             </div>
         `;
+
     } catch (error) {
         console.error(error);
 
@@ -372,7 +471,18 @@ function closeMovieModal() {
 }
 
 
-moviesGrid.addEventListener("click", (event) => {
+function clearFilters() {
+    searchInput.value = "";
+    classicFilter.value = "";
+    yearFilter.value = "";
+
+    currentMovieResults = allMovies;
+
+    renderMovieResults();
+}
+
+
+moviesGrid.addEventListener("click", event => {
     const card =
         event.target.closest(".movie-card");
 
@@ -384,7 +494,7 @@ moviesGrid.addEventListener("click", (event) => {
 });
 
 
-classicsGrid.addEventListener("click", (event) => {
+classicsGrid.addEventListener("click", event => {
     const card =
         event.target.closest(".movie-card");
 
@@ -396,8 +506,11 @@ classicsGrid.addEventListener("click", (event) => {
 });
 
 
-moviesGrid.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" && event.key !== " ") {
+moviesGrid.addEventListener("keydown", event => {
+    if (
+        event.key !== "Enter" &&
+        event.key !== " "
+    ) {
         return;
     }
 
@@ -414,8 +527,11 @@ moviesGrid.addEventListener("keydown", (event) => {
 });
 
 
-classicsGrid.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" && event.key !== " ") {
+classicsGrid.addEventListener("keydown", event => {
+    if (
+        event.key !== "Enter" &&
+        event.key !== " "
+    ) {
         return;
     }
 
@@ -438,11 +554,32 @@ searchButton.addEventListener(
 );
 
 
-searchInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-        searchMovies();
+searchInput.addEventListener(
+    "keydown",
+    event => {
+        if (event.key === "Enter") {
+            searchMovies();
+        }
     }
-});
+);
+
+
+classicFilter.addEventListener(
+    "change",
+    renderMovieResults
+);
+
+
+yearFilter.addEventListener(
+    "change",
+    renderMovieResults
+);
+
+
+clearFiltersButton.addEventListener(
+    "click",
+    clearFilters
+);
 
 
 closeModal.addEventListener(
@@ -451,21 +588,27 @@ closeModal.addEventListener(
 );
 
 
-movieModal.addEventListener("click", (event) => {
-    if (event.target === movieModal) {
-        closeMovieModal();
+movieModal.addEventListener(
+    "click",
+    event => {
+        if (event.target === movieModal) {
+            closeMovieModal();
+        }
     }
-});
+);
 
 
-document.addEventListener("keydown", (event) => {
-    if (
-        event.key === "Escape" &&
-        !movieModal.classList.contains("hidden")
-    ) {
-        closeMovieModal();
+document.addEventListener(
+    "keydown",
+    event => {
+        if (
+            event.key === "Escape" &&
+            !movieModal.classList.contains("hidden")
+        ) {
+            closeMovieModal();
+        }
     }
-});
+);
 
 
 loadMovies();
