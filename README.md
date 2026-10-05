@@ -26,7 +26,7 @@ https://webflyx.onrender.com/
 * 📱 Responsive frontend
 * 🧪 Automated API tests
 * ⚙️ GitHub Actions CI
-* 🌍 Deployed web application
+* 🌍 Live web deployment
 
 ## 🛠️ Tech Stack
 
@@ -79,52 +79,11 @@ webflyx/
 └── README.md
 ```
 
-## 🚀 Getting Started
+## 🌐 Using the Application
 
-### 1. Clone the repository
+The easiest way to use WebFlyx is through the live website.
 
-```bash
-git clone git@github.com:hiba-hroob/webflyx.git
-cd webflyx
-```
-
-### 2. Install dependencies
-
-This project uses `uv`.
-
-```bash
-uv sync
-```
-
-### 3. Seed the database
-
-Populate the SQLite database with the movie, classic movie, and quote data:
-
-```bash
-uv run python scripts/seed_db.py
-```
-
-### 4. Run the application
-
-```bash
-uv run uvicorn app.main:app --reload
-```
-
-The application will be available at:
-
-```text
-http://127.0.0.1:8000
-```
-
-## 🌐 Frontend
-
-Open:
-
-```text
-http://127.0.0.1:8000/
-```
-
-The frontend provides:
+The application provides:
 
 * Movie browsing
 * Movie search
@@ -136,13 +95,11 @@ The frontend provides:
 
 ## 📚 API
 
-FastAPI automatically provides interactive API documentation.
+WebFlyx provides a REST API powered by FastAPI.
 
-Open:
+Interactive API documentation is available at:
 
-```text
-http://127.0.0.1:8000/docs
-```
+https://webflyx.onrender.com/docs
 
 ### Health Check
 
@@ -200,13 +157,15 @@ GET /quotes
 
 ## 🧪 Testing
 
+The project includes an automated test suite using **pytest**.
+
 Run the complete test suite with:
 
 ```bash
 uv run pytest -q
 ```
 
-The project currently includes tests covering:
+The tests cover:
 
 * Movie listing
 * Classic movie listing
@@ -248,33 +207,66 @@ The workflow:
 
 WebFlyx is deployed on **Render**.
 
-The deployment uses:
+The deployment uses the following commands:
 
-```text
-Build Command:
+### Build Command
+
+```bash
 uv sync --frozen && PYTHONPATH=. uv run python scripts/seed_db.py
 ```
 
-```text
-Start Command:
+### Start Command
+
+```bash
 uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-The database is initialized during deployment using:
+During deployment, the database is initialized using:
 
 ```text
 scripts/seed_db.py
 ```
 
-This loads:
+The seeding process loads:
 
 * Movie titles from `titles.md`
 * Classic movie information from `classics.csv`
 * Movie quotes from the `quotes/` directory
 
-Live application:
+## 💻 Local Development
 
-https://webflyx.onrender.com/
+Although WebFlyx is available online, the project can also be run locally for development.
+
+### Clone the repository
+
+```bash
+git clone git@github.com:hiba-hroob/webflyx.git
+cd webflyx
+```
+
+### Install dependencies
+
+```bash
+uv sync
+```
+
+### Seed the database
+
+```bash
+uv run python scripts/seed_db.py
+```
+
+### Run the application
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+The local application will be available at:
+
+```text
+http://127.0.0.1:8000
+```
 
 ## 🌿 Git Branches
 
@@ -311,7 +303,7 @@ Implemented:
 * Trailer links
 * Frontend JavaScript
 
-### Phase 3 — Quality & CI
+### Phase 3 — Quality, CI & Deployment
 
 Implemented:
 
