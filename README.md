@@ -338,3 +338,8 @@ WebFlyx is a fully functional and deployed movie catalog application with:
 ## 👩‍💻 Author
 
 **Hiba Hroob**
+
+## 🧪 Demo Notice
+
+**All live links provided below are for demonstration purposes only.** These are demo versions intended to showcase the projects' features and functionality.
+
